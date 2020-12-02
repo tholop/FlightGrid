@@ -7,8 +7,9 @@ import json
 import requests
 import logging
 
-import syft as sy
-import torch as th
+logging.getLogger().setLevel(logging.INFO)
+
+from worker import sy, hook, local_worker
 
 from flight_server import FlightServer
 
@@ -62,12 +63,6 @@ parser.set_defaults(use_test_config=False)
 
 if __name__ == "__main__":
     args = parser.parse_args()
-
-    th.set_num_threads(1)
-
-    hook = sy.TorchHook(th)
-    local_worker = sy.VirtualWorker(hook, auto_add=False)
-    hook.local_worker.is_client_worker = False
 
     scheme = "grpc+tcp"
     host = args.host
