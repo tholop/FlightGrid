@@ -72,6 +72,7 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         )
         self.flights = {}
         self.host = host
+        self.location = location
         self.tls_certificates = tls_certificates
         self.local_worker = local_worker
 
@@ -84,6 +85,9 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         )
 
     def do_put(self, context, descriptor, reader, writer):
+
+        # logging.info(f"{self.location} received stuff")
+
         # Check the type of the message
         key = FlightServer.descriptor_to_key(descriptor)
 
@@ -94,11 +98,11 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         message_buffer = record_batch[0].buffers()[2]
 
         if key[1] == b"json":
-            logging.info("Got json.")
+            # logging.info("Got json.")
             request_id = None
             try:
                 message_dict = json.loads(message_buffer.to_pybytes().decode("utf-8"))
-                logging.info(f"Deserialized message: {message_dict}")
+                # logging.info(f"Deserialized message: {message_dict}")
                 request_id = message_dict.get(MSG_FIELD.REQUEST_ID)
                 response = routes[message_dict[REQUEST_MSG.TYPE_FIELD]](message_dict)
             except Exception as e:
@@ -106,16 +110,16 @@ class FlightServer(pyarrow.flight.FlightServerBase):
             if request_id:
                 response[MSG_FIELD.REQUEST_ID] = request_id
 
-            logging.info(f"Response: {response}")
+            # logging.info(f"Response: {response}")
             bin_response = json.dumps(response).encode("utf-8")
 
         else:
-            logging.info(f"Got binary message: {message_buffer}")
+            # logging.info(f"Got binary message: {message_buffer}")
             # The local worker is a virtual worker, will deserialize with Arrow
             # and send a response in bytes
             # bin_response = self.forward_binary_message_arrow(message_buffer)
             bin_response = self.forward_binary_message(message_buffer.to_pybytes())
-        logging.info(f"Writing bin response: {bin_response}")
+        # logging.info(f"Writing bin response: {bin_response}")
         # Write the response in the metadata field (short response in bytes)
         writer.write(bin_response)
 
@@ -127,11 +131,11 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         Returns:
             response (bin) : PySyft binary response.
         """
-        logging.info(f"Forwarding arrow")
+        # logging.info(f"Forwarding arrow")
         try:
             # The decoded response is in bytes
             decoded_response = self.local_worker._recv_msg(message)
-            logging.info(f"Got a response: {decoded_response}")
+            # logging.info(f"Got a response: {decoded_response}")
         except (
             EmptyCryptoPrimitiveStoreError,
             GetNotPermittedError,
@@ -143,7 +147,7 @@ class FlightServer(pyarrow.flight.FlightServerBase):
             #     current_user.save_request(message._contents)
 
             # TODO: no need for pyarrow serde.
-            logging.info(f"Got an error: {e}")
+            # logging.info(f"Got an error: {e}")
 
             decoded_response = sy.serde.serialize(e)
         return decoded_response
@@ -156,11 +160,11 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         Returns:
             response (bin) : PySyft binary response.
         """
-        logging.info(f"Forwarding arrow")
+        # logging.info(f"Forwarding arrow")
         try:
             # The decoded response is in bytes
             decoded_response = self.local_worker._recv_msg_arrow(message)
-            logging.info(f"Got a response: {decoded_response}")
+            # logging.info(f"Got a response: {decoded_response}")
         except (
             EmptyCryptoPrimitiveStoreError,
             GetNotPermittedError,
@@ -172,7 +176,7 @@ class FlightServer(pyarrow.flight.FlightServerBase):
             #     current_user.save_request(message._contents)
 
             # TODO: no need for pyarrow serde.
-            logging.info(f"Got an error: {e}")
+            # logging.info(f"Got an error: {e}")
 
             decoded_response = sy.serde.serialize(e)
         return decoded_response

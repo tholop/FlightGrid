@@ -64,6 +64,11 @@ parser.set_defaults(use_test_config=False)
 if __name__ == "__main__":
     args = parser.parse_args()
 
+    node_id = args.id
+    local_worker.id = node_id
+    hook.local_worker._known_workers[node_id] = local_worker
+    local_worker.add_worker(hook.local_worker)
+
     scheme = "grpc+tcp"
     host = args.host
     port = args.port
@@ -71,6 +76,8 @@ if __name__ == "__main__":
     server = FlightServer(host, location, local_worker=local_worker)
 
     logging.info(f"Initialized the server: {server}. Starting to serve...")
+    logging.info(f"Server location: {server.location}")
+    logging.info(f"Local worker id: {local_worker.id}")
 
     server.serve()
 
