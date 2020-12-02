@@ -10,7 +10,7 @@ import logging
 import syft as sy
 import torch as th
 
-from .flight_server import FlightServer
+from flight_server import FlightServer
 
 
 parser = argparse.ArgumentParser(description="Run PyGrid application.")
@@ -74,6 +74,8 @@ if __name__ == "__main__":
     port = args.port
     location = "{}://{}:{}".format(scheme, host, port)
     server = FlightServer(host, location, local_worker=local_worker)
+
+    logging.info(f"Initialized the server: {server}. Starting to serve...")
 
     server.serve()
 

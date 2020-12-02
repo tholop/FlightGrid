@@ -1,2 +1,3 @@
 #!/bin/bash
-poetry run python -m src "$@"
+which python
+python /home/pierre/Documents/FlightGrid/src/main.py "$@"

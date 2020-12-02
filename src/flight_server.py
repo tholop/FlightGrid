@@ -7,6 +7,11 @@ import numpy as np
 import pyarrow
 import pyarrow.flight
 
+
+from syft.exceptions import EmptyCryptoPrimitiveStoreError
+from syft.exceptions import GetNotPermittedError
+from syft.exceptions import ResponseSignatureError
+
 import logging
 
 
@@ -27,38 +32,32 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         self.flights = {}
         self.host = host
         self.tls_certificates = tls_certificates
+        self.local_worker = local_worker
 
     def do_put(self, context, descriptor, reader, writer):
-        key = FlightServer.descriptor_to_key(descriptor)
-        t = time.time()
-        print(f"Got a new key: {key}")
 
-        table = reader.read_all()
-        # n = np.asarray(table.to_pandas())
-        # self.flights[key] = reader.read_all()
-        dl_time = time.time() - t
-        print("Read all and converted to numpy:")
-        n = np.asarray(table.to_pandas())
-        # print(self.flights[key])
-        print(n.shape)
-        print(f"Time: {dl_time}")
-        print(f"Bandwidth (Gb/s): {(n.nbytes / 1_000_000_000) / dl_time }")
+        # Read the first (and only) record, discard the metadata
+        record_batch = reader.read_chunk().data
 
-        local_worker.swallow_numpy_array(n)
+        # The first two buffers hold some metadata about the binary array
+        message_buffer = record_batch[0].buffers()[2]
 
-        response = self.forward_binary_message_arrow(message)
+        # The local worker is a virtual worker, will deserialize with Arrow
+        response = self.forward_binary_message_arrow(message_buffer)
 
-        # TODO: send the response somehow?
+        # Write the response in the metadata field (short response in bytes)
+        writer.write(r)
 
-    def forward_binary_message_arrow(self, message: bin) -> bin:
+    def forward_binary_message_arrow(self, message) -> bin:
         """Forward binary syft messages to user's workers.
 
         Args:
-            message (bin) : PySyft binary message.
+            message (bin) : pyarrow?
         Returns:
             response (bin) : PySyft binary response.
         """
         try:
+            # The decoded response is in bytes
             decoded_response = self.local_worker._recv_msg_arrow(message)
 
         except (
