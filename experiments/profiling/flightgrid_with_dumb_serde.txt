@@ -1,0 +1,117 @@
+Take with a pinch of salt. Why the number of function calls is different?
+The websocket seems to spam calls.
+
+❯ python main.py --model network1 --dataset mnist --batch_size 1024 --verbose --websockets --test
+
+Launching the websocket workers...
+INFO:root:Initialized the server: <flight_server.FlightServer object at 0x7fc4caa37380>. Starting to serve...
+INFO:root:Server location: grpc+tcp://localhost:7602
+INFO:root:Local worker id: crypto_provider
+INFO:root:Initialized the server: <flight_server.FlightServer object at 0x7ff2cc368180>. Starting to serve...
+INFO:root:Server location: grpc+tcp://localhost:7601
+INFO:root:Local worker id: bob
+INFO:root:Initialized the server: <flight_server.FlightServer object at 0x7f886f079040>. Starting to serve...
+INFO:root:Server location: grpc+tcp://localhost:7600
+INFO:root:Local worker id: alice
+LAUNCHED 67352 67355 67360
+Running a full evaluation
+model:           network1
+dataset:         mnist
+batch_size:      1024
+INFO:root:Init
+INFO:root:Workers: [<Federated Worker id:alice>, <Federated Worker id:bob>, <Federated Worker id:crypto_provider>]
+Pre-trained model loaded from network1_mnist_98.pt
+Accuracy: 1002/1024 (98%)       Time / item: 0.0032s
+^[[BTEST Accuracy: 9048.0/9216 (98.18%) Time /item: 0.0036s      Time w. argmax /item: 0.0046s [1024.000]
+
+         735659 function calls (701547 primitive calls) in 42.901 seconds
+
+   Ordered by: internal time
+   List reduced from 592 to 59 due to restriction <0.1>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1276   21.487    0.017   21.487    0.017 {method 'read' of 'pyarrow._flight.FlightMetadataReader' objects}
+       54    8.182    0.152    8.195    0.152 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/sycret/fss.py:39(keygen)
+     1276    4.530    0.004    4.530    0.004 {method 'pack' of 'msgpack._cmsgpack.Packer' objects}
+      108    2.242    0.021    2.242    0.021 {method 'tobytes' of 'numpy.ndarray' objects}
+     1276    2.136    0.002    2.136    0.002 {method 'write_batch' of 'pyarrow._flight.MetadataRecordBatchWriter' objects}
+     1276    1.935    0.002    1.945    0.002 {pyarrow.lib.array}
+      108    0.211    0.002   26.623    0.247 /home/pierre/Documents/AriaNN/PySyft/syft/frameworks/torch/mpc/primitives.py:146(provide_primitives)
+       27    0.179    0.007    0.179    0.007 {built-in method matmul}
+      173    0.178    0.001    0.178    0.001 {function _TensorBase.random_ at 0x7f5a9a558820}
+      108    0.163    0.002    0.163    0.002 {built-in method randint}
+   108/54    0.157    0.001   34.293    0.635 /home/pierre/Documents/AriaNN/PySyft/syft/frameworks/torch/mpc/fss.py:66(fss_op)
+     1276    0.156    0.000    0.156    0.000 {method 'close' of 'pyarrow.lib._CRecordBatchWriter' objects}
+     1276    0.129    0.000    4.664    0.004 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/msgpack_numpy.py:250(packb)
+1276/1268    0.126    0.000    7.443    0.006 /home/pierre/Documents/AriaNN/PySyft/syft/serde/serde.py:15(serialize)
+      796    0.073    0.000    0.073    0.000 {method '_write_file' of 'torch._C.LongStorageBase' objects}
+     1276    0.070    0.000    0.070    0.000 {method 'do_put' of 'pyarrow._flight.FlightClient' objects}
+85023/84933    0.061    0.000    0.087    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:73(wrapper)
+27526/1268    0.046    0.000    2.646    0.002 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:402(_simplify)
+      328    0.030    0.000    0.030    0.000 {method '_set_from_file' of 'torch._C.LongStorageBase' objects}
+     1276    0.029    0.000    0.029    0.000 {method 'to_pybytes' of 'pyarrow.lib.Buffer' objects}
+     1276    0.027    0.000    0.027    0.000 {msgpack._cmsgpack.unpackb}
+     1276    0.026    0.000   25.889    0.020 /home/pierre/Documents/AriaNN/PySyft/syft/workers/websocket_client.py:139(_recv_msg)
+      173    0.026    0.000    0.026    0.000 {function _TensorBase.__sub__ at 0x7f5a9a5b7550}
+      164    0.021    0.000    0.021    0.000 {function _TensorBase.__radd__ at 0x7f5a9a56bc10}
+      177    0.021    0.000    0.021    0.000 {function _TensorBase.__add__ at 0x7f5a9a56b940}
+      904    0.021    0.000    0.064    0.000 {method 'dump' of '_pickle.Pickler' objects}
+     1276    0.019    0.000   25.863    0.020 /home/pierre/Documents/AriaNN/PySyft/syft/grid/clients/data_centric_fl_client.py:181(_forward_to_flight_server_worker)
+     1276    0.018    0.000    0.018    0.000 {pyarrow.lib.from_arrays}
+   108/54    0.014    0.000    8.023    0.149 /home/pierre/Documents/AriaNN/PySyft/syft/frameworks/torch/mpc/spdz.py:144(spdz_mul)
+     2712    0.013    0.000    0.031    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/workers/base.py:1074(serializer)
+    18544    0.013    0.000    0.024    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/torch/serialization.py:344(persistent_id)
+      904    0.013    0.000    0.019    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/torch/tensor.py:75(__reduce_ex__)
+      904    0.012    0.000    0.169    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/torch/serialization.py:331(_legacy_save)
+    48175    0.012    0.000    0.020    0.000 {built-in method builtins.isinstance}
+    85023    0.012    0.000    0.013    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:146(update)
+       54    0.012    0.000    0.012    0.000 {function _TensorBase.__mod__ at 0x7f5a9a566c10}
+      108    0.011    0.000    0.011    0.000 {built-in method numpy.zeros}
+      864    0.011    0.000    0.011    0.000 {built-in method builtins.compile}
+      386    0.009    0.000    0.009    0.000 {built-in method tensor}
+1168/1146    0.009    0.000   25.340    0.022 /home/pierre/Documents/AriaNN/PySyft/syft/workers/base.py:311(send_msg)
+      830    0.009    0.000    7.655    0.009 /home/pierre/Documents/AriaNN/PySyft/syft/workers/base.py:619(send_command)
+     3616    0.009    0.000    0.009    0.000 {built-in method _pickle.dump}
+    27526    0.009    0.000    0.009    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:390(_simplify_field)
+3430/2128    0.008    0.000    2.571    0.001 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/native_serde.py:22(_simplify_collection)
+      904    0.008    0.000    0.258    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/torch_serde.py:106(_simplify_torch_tensor)
+     3392    0.008    0.000    0.016    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/generic/id_provider.py:26(pop)
+4860/1256    0.008    0.000    0.186    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:504(_detail)
+    57091    0.007    0.000    0.007    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:122(simplifiers)
+      328    0.007    0.000    0.037    0.000 {method 'load' of '_pickle.Unpickler' objects}
+     1312    0.007    0.000    0.007    0.000 {built-in method _pickle.load}
+     1276    0.005    0.000    0.005    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/msgpack_numpy.py:187(__init__)
+     1276    0.005    0.000    0.033    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/msgpack_numpy.py:266(unpackb)
+      904    0.005    0.000    0.179    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/torch/serialization.py:295(save)
+     3392    0.005    0.000    0.007    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/generic/id_provider.py:6(create_random_id)
+     1330    0.005    0.000    0.008    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/os.py:670(__getitem__)
+     3005    0.005    0.000    0.008    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/generic/utils.py:16(__call__)
+     1276    0.005    0.000    0.038    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:350(_deserialize_msgpack_binary)
+      108    0.005    0.000    0.030    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/tblib/__init__.py:192(from_string)
+      450    0.005    0.000    7.226    0.016 /home/pierre/Documents/AriaNN/PySyft/syft/generic/utils.py:43(remote_exec)
+
+
+
+Clear text accuracy is:
+Pre-trained model loaded from network1_mnist_98.pt
+TEST Accuracy: 9048/9216 (98.18%)       Time /item: 0.0000s      Time w. argmax /item: 0.0000s [1024.000]
+
+         3552 function calls (3356 primitive calls) in 0.045 seconds
+
+   Ordered by: internal time
+   List reduced from 80 to 8 due to restriction <0.1>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       27    0.033    0.001    0.033    0.001 {built-in method addmm}
+        9    0.003    0.000    0.003    0.000 {function _TensorBase.argmax at 0x7f5a9a5a61f0}
+       27    0.002    0.000    0.002    0.000 {built-in method relu}
+   108/54    0.001    0.000    0.039    0.001 /home/pierre/Documents/AriaNN/PySyft/syft/frameworks/torch/tensors/interpreters/native.py:405(handle_func_command)
+      339    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+       27    0.000    0.000    0.000    0.000 {function _TensorBase.t at 0x7f5a9a562d30}
+     36/9    0.000    0.000    0.040    0.004 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/torch/nn/modules/module.py:522(__call__)
+   108/54    0.000    0.000    0.037    0.001 /home/pierre/Documents/AriaNN/PySyft/syft/frameworks/torch/tensors/interpreters/native.py:506(_get_response)
+
+
+
+Process 67352 killed
+Process 67355 killed

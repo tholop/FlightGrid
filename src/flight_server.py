@@ -20,6 +20,7 @@ from events import get_node_infos, connect_grid_nodes
 
 from worker import sy
 
+
 routes = {
     # CONTROL_EVENTS.SOCKET_PING: socket_ping,
     # MODEL_CENTRIC_FL_EVENTS.HOST_FL_TRAINING: host_federated_training,
@@ -86,42 +87,76 @@ class FlightServer(pyarrow.flight.FlightServerBase):
 
     def do_put(self, context, descriptor, reader, writer):
 
-        # logging.info(f"{self.location} received stuff")
-
         # Check the type of the message
         key = FlightServer.descriptor_to_key(descriptor)
+        logging.info(f"Server {self.location[-5:]} received stuff: {key}")
 
-        # Read the first (and only) record, discard the metadata
-        record_batch = reader.read_chunk().data
+        # TODO: nicer encoding for the commands
+        if key[1] in [b"fss_eq", b"fss_comp"]:
+            table = reader.read_all()
+            n = np.asarray(table.to_pandas())
+            op = "fss_eq" if key[1] == b"fss_eq" else "fss_comp"
+            logging.info(
+                f"Feeding primitives for {op} with shape {n.shape} and type {n.dtype}: \n {n}"
+            )
+            logging.info(f"Creating a stupid message")
 
-        # The first two buffers hold some metadata about the binary array
-        message_buffer = record_batch[0].buffers()[2]
-
-        if key[1] == b"json":
-            # logging.info("Got json.")
-            request_id = None
-            try:
-                message_dict = json.loads(message_buffer.to_pybytes().decode("utf-8"))
-                # logging.info(f"Deserialized message: {message_dict}")
-                request_id = message_dict.get(MSG_FIELD.REQUEST_ID)
-                response = routes[message_dict[REQUEST_MSG.TYPE_FIELD]](message_dict)
-            except Exception as e:
-                response = {"error": str(e)}
-            if request_id:
-                response[MSG_FIELD.REQUEST_ID] = request_id
-
-            # logging.info(f"Response: {response}")
-            bin_response = json.dumps(response).encode("utf-8")
-
+            # self.local_worker.feed_crypto_primitive_store({op: n})
+            worker_message = self.local_worker.create_worker_command_message(
+                "feed_crypto_primitive_store", None, {op: n}
+            )
+            # TODO: wrong worker??
+            bin_message = sy.serde.serialize(worker_message, worker=self.local_worker)
+            response = self.forward_binary_message(bin_message)
+            # logging.info(f"Asking gently: {worker_message}")
+            # logging.info(f"This is being handled by {self.local_worker}")
+            # for handler in self.local_worker.message_handlers:
+            #     if handler.supports(worker_message):
+            #         logging.info(f"Handling {type(worker_message)} with {handler}")
+            #         response = handler.handle(worker_message)
+            #         logging.info("Finished handling.")
+            #         break
+            # self.local_worker._recv_msg(worker_message)
+            logging.info(f"Done. \n response?{response}")
         else:
-            # logging.info(f"Got binary message: {message_buffer}")
-            # The local worker is a virtual worker, will deserialize with Arrow
-            # and send a response in bytes
-            # bin_response = self.forward_binary_message_arrow(message_buffer)
-            bin_response = self.forward_binary_message(message_buffer.to_pybytes())
-        # logging.info(f"Writing bin response: {bin_response}")
-        # Write the response in the metadata field (short response in bytes)
-        writer.write(bin_response)
+            # Read the first (and only) record, discard the metadata
+            record_batch = reader.read_chunk().data
+
+            # The first two buffers hold some metadata about the binary array
+            message_buffer = record_batch[0].buffers()[2]
+
+            if key[1] == b"json":
+                # logging.info("Got json.")
+                request_id = None
+                try:
+                    message_dict = json.loads(
+                        message_buffer.to_pybytes().decode("utf-8")
+                    )
+                    # logging.info(f"Deserialized message: {message_dict}")
+                    request_id = message_dict.get(MSG_FIELD.REQUEST_ID)
+                    response = routes[message_dict[REQUEST_MSG.TYPE_FIELD]](
+                        message_dict
+                    )
+                except Exception as e:
+                    response = {"error": str(e)}
+                if request_id:
+                    response[MSG_FIELD.REQUEST_ID] = request_id
+
+                # logging.info(f"Response: {response}")
+                bin_response = json.dumps(response).encode("utf-8")
+
+            else:
+                # logging.info(f"Got binary message: {message_buffer}")
+                # The local worker is a virtual worker, will deserialize with Arrow
+                # and send a response in bytes
+                # bin_response = self.forward_binary_message_arrow(message_buffer)
+
+                bin_message = message_buffer.to_pybytes()
+                logging.info(f"Received {len(bin_message)} bytes.")
+                bin_response = self.forward_binary_message(bin_message)
+                logging.info(f"Writing bin response: {len(bin_response)}")
+            # Write the response in the metadata field (short response in bytes)
+            writer.write(bin_response)
 
     def forward_binary_message(self, message: bin) -> bin:
         """Forward binary syft messages to user's workers.
@@ -134,6 +169,7 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         # logging.info(f"Forwarding arrow")
         try:
             # The decoded response is in bytes
+            logging.info(f"{self.local_worker} is receiving a message")
             decoded_response = self.local_worker._recv_msg(message)
             # logging.info(f"Got a response: {decoded_response}")
         except (

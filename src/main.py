@@ -7,7 +7,8 @@ import json
 import requests
 import logging
 
-logging.getLogger().setLevel(logging.INFO)
+# logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().setLevel(logging.WARNING)
 
 from worker import sy, hook, local_worker
 
