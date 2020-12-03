@@ -1,0 +1,133 @@
+Special function to shoot an array directly.
+No weird reserialization.
+
+-> Garbage accuracy
+-> Suprisingly slower. A potential culprit: thread.lock, the way we send the array might be wrong.
+
+❯ python main.py --model network1 --dataset mnist --batch_size 1024 --websockets --verbose --test
+Launching the websocket workers...
+LAUNCHED 13985 13987 13992
+Running a full evaluation
+model:           network1
+dataset:         mnist
+batch_size:      1024
+Pre-trained model loaded from network1_mnist_98.pt
+Accuracy: -17140675584/1024 (-1673894100%)      Time / item: 0.0037s
+TEST Accuracy: 40158765056.0/9216 (435750488.89%)       Time /item: 0.0048s     Time w. argmax /item: 0.0064s [1024.000]
+
+         16187709 function calls (16143769 primitive calls) in 60.620 seconds
+
+   Ordered by: internal time
+   List reduced from 832 to 83 due to restriction <0.1>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1194   18.299    0.015   18.299    0.015 {method 'read' of 'pyarrow._flight.FlightMetadataReader' objects}
+   186172   12.295    0.000   12.295    0.000 {method 'acquire' of '_thread.lock' objects}
+       54    9.241    0.171    9.257    0.171 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/sycret/fss.py:39(keygen)
+     1302    4.158    0.003    4.158    0.003 {method 'close' of 'pyarrow.lib._CRecordBatchWriter' objects}
+      108    2.347    0.022    2.347    0.022 {method 'write_table' of 'pyarrow.lib._CRecordBatchWriter' objects}
+    45492    1.364    0.000    1.967    0.000 {pyarrow.lib.array}
+    50112    0.810    0.000    0.810    0.000 {method '__enter__' of '_thread.lock' objects}
+   187956    0.529    0.000    3.903    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/frame.py:2869(__getitem__)
+   281934    0.364    0.000    0.677    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/generic.py:5141(__setattr__)
+    50166    0.338    0.000    0.370    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/threading.py:222(__init__)
+    94086    0.322    0.000    1.670    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pyarrow/pandas_compat.py:116(get_extension_dtype_info)
+   187956    0.285    0.000    2.881    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/generic.py:3532(_get_item_cache)
+   188280    0.284    0.000    1.192    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/numpy/core/_dtype.py:46(__str__)
+    93978    0.278    0.000    0.985    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/managers.py:984(iget)
+    49680    0.268    0.000    2.389    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/concurrent/futures/thread.py:158(submit)
+   188388    0.257    0.000    0.890    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/numpy/core/_dtype.py:333(_name_get)
+     1194    0.253    0.000    0.253    0.000 {method 'pack' of 'msgpack._cmsgpack.Packer' objects}
+     1194    0.240    0.000    0.240    0.000 {method 'write_batch' of 'pyarrow._flight.MetadataRecordBatchWriter' objects}
+    93978    0.221    0.000    1.264    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/frame.py:3184(_box_col_values)
+  1515057    0.208    0.000    0.276    0.000 {built-in method builtins.isinstance}
+      173    0.195    0.001    0.195    0.001 {function _TensorBase.random_ at 0x7f44c39f2040}
+   376776    0.181    0.000    0.253    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/numpy/core/numerictypes.py:293(issubclass_)
+      108    0.180    0.002   23.717    0.220 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pyarrow/pandas_compat.py:538(dataframe_to_arrays)
+      108    0.173    0.002    4.237    0.039 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pyarrow/pandas_compat.py:328(_get_columns_to_convert)
+   108/54    0.171    0.002   50.091    0.928 /home/pierre/Documents/AriaNN/PySyft/syft/frameworks/torch/mpc/fss.py:66(fss_op)
+   138276    0.170    0.000    0.467    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/generic.py:5123(__getattr__)
+    93978    0.167    0.000    0.939    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/series.py:201(__init__)
+       27    0.165    0.006    0.165    0.006 {built-in method matmul}
+   276552    0.164    0.000    0.296    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/managers.py:1602(dtype)
+    93978    0.160    0.000    0.184    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/managers.py:1532(__init__)
+      108    0.158    0.001    0.158    0.001 {built-in method randint}
+    94086    0.149    0.000    0.315    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/blocks.py:124(__init__)
+   187956    0.143    0.000    0.269    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/indexes/range.py:341(__contains__)
+   188388    0.141    0.000    0.407    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/numpy/core/numerictypes.py:365(issubdtype)
+    94086    0.138    0.000    0.152    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/generic.py:195(__init__)
+      108    0.130    0.001   23.848    0.221 {built-in method from_pandas}
+   989998    0.126    0.000    0.126    0.000 {built-in method builtins.issubclass}
+   276552    0.122    0.000    0.418    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/series.py:427(dtype)
+      108    0.116    0.001    2.627    0.024 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pyarrow/pandas_compat.py:180(construct_metadata)
+   188388    0.115    0.000    0.523    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/numpy/core/_dtype.py:319(_name_includes_bit_suffix)
+    93978    0.113    0.000    1.847    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pyarrow/pandas_compat.py:135(get_column_metadata)
+    93978    0.109    0.000    0.211    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/series.py:442(name)
+    49680    0.108    0.000    1.219    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/threading.py:394(acquire)
+    94086    0.108    0.000    0.390    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/dtypes/common.py:224(is_sparse)
+    46435    0.107    0.000    0.415    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/threading.py:270(wait)
+      216    0.103    0.000    0.103    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/json/encoder.py:204(iterencode)
+   370530    0.097    0.000    0.097    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/managers.py:1575(_block)
+    49680    0.096    0.000    1.553    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/concurrent/futures/thread.py:193(_adjust_thread_count)
+    93978    0.091    0.000    0.405    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/blocks.py:256(make_block_same_class)
+      108    0.090    0.001   30.500    0.282 /home/pierre/Documents/AriaNN/PySyft/syft/workers/base.py:346(shoot_array)
+    93978    0.088    0.000    0.217    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pyarrow/pandas_compat.py:270(_column_name_to_strings)
+     1302    0.087    0.000    0.087    0.000 {method 'do_put' of 'pyarrow._flight.FlightClient' objects}
+   282366    0.082    0.000    0.117    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/dtypes/inference.py:322(is_hashable)
+    49680    0.081    0.000    0.447    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/concurrent/futures/_base.py:316(__init__)
+   188388    0.080    0.000    0.108    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/dtypes/common.py:150(ensure_python_int)
+      796    0.079    0.000    0.079    0.000 {method '_write_file' of 'torch._C.LongStorageBase' objects}
+    94086    0.076    0.000    0.091    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/blocks.py:237(mgr_locs)
+    93978    0.074    0.000    0.099    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/indexes/range.py:697(__getitem__)
+   148965    0.074    0.000    0.221    0.000 {built-in method builtins.getattr}
+    49680    0.073    0.000    0.091    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/concurrent/futures/thread.py:46(__init__)
+450417/449121    0.070    0.000    0.070    0.000 {built-in method builtins.len}
+    93978    0.064    0.000    0.102    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/indexes/range.py:349(get_loc)
+   276660    0.063    0.000    0.063    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/blocks.py:315(dtype)
+    93978    0.063    0.000    0.075    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/series.py:398(_set_axis)
+    93978    0.062    0.000    0.168    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/generic.py:3180(_set_as_cached)
+    81057    0.061    0.000    0.087    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:73(wrapper)
+    93978    0.061    0.000    0.109    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/managers.py:1609(external_values)
+    93978    0.060    0.000    0.449    0.000 {method 'is_sparse' of 'pyarrow.lib._PandasAPIShim' objects}
+    94141    0.059    0.000    0.081    0.000 <frozen importlib._bootstrap>:1017(_handle_fromlist)
+   188930    0.059    0.000    0.059    0.000 {method 'format' of 'str' objects}
+    93978    0.059    0.000    0.059    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/internals/blocks.py:319(iget)
+   534886    0.058    0.000    0.058    0.000 {method 'append' of 'list' objects}
+    93978    0.055    0.000    0.095    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/series.py:492(name)
+   470803    0.054    0.000    0.054    0.000 {built-in method builtins.hash}
+    93978    0.053    0.000    0.162    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/series.py:498(values)
+   187956    0.052    0.000    0.072    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/common.py:329(apply_if_callable)
+    49680    0.049    0.000    0.096    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/concurrent/futures/_base.py:412(result)
+      328    0.049    0.000    0.049    0.000 {method '_set_from_file' of 'torch._C.LongStorageBase' objects}
+    93978    0.045    0.000    0.045    0.000 {pyarrow.lib.field}
+    44406    0.045    0.000    0.045    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/pandas/core/dtypes/common.py:178(classes)
+      108    0.044    0.000   30.410    0.282 /home/pierre/Documents/AriaNN/PySyft/syft/grid/clients/data_centric_fl_client.py:183(_shoot_array_to_flight_server_worker)
+26204/1194    0.043    0.000    0.411    0.000 /home/pierre/Documents/AriaNN/PySyft/syft/serde/msgpack/serde.py:402(_simplify)
+    99792    0.039    0.000    0.857    0.000 /home/pierre/.miniconda/envs/ariann/lib/python3.8/threading.py:246(__enter__)
+
+
+
+Clear text accuracy is:
+Pre-trained model loaded from network1_mnist_98.pt
+TEST Accuracy: 9048/9216 (98.18%)       Time /item: 0.0000s     Time w. argmax /item: 0.0000s [1024.000]
+
+         3552 function calls (3356 primitive calls) in 0.047 seconds
+
+   Ordered by: internal time
+   List reduced from 80 to 8 due to restriction <0.1>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       27    0.037    0.001    0.037    0.001 {built-in method addmm}
+        9    0.003    0.000    0.003    0.000 {function _TensorBase.argmax at 0x7f44c39f2af0}
+       27    0.002    0.000    0.002    0.000 {built-in method relu}
+   108/54    0.001    0.000    0.042    0.001 /home/pierre/Documents/AriaNN/PySyft/syft/frameworks/torch/tensors/interpreters/native.py:405(handle_func_command)
+      339    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+     36/9    0.000    0.000    0.043    0.005 /home/pierre/.miniconda/envs/ariann/lib/python3.8/site-packages/torch/nn/modules/module.py:522(__call__)
+       27    0.000    0.000    0.000    0.000 {function _TensorBase.t at 0x7f44c399cc10}
+        9    0.000    0.000    0.000    0.000 {function _TensorBase.sum at 0x7f44c399f670}
+
+
+
+Process 13985 killed
+Process 13987 killed
+Process 13992 killed

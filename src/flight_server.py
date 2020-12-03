@@ -90,24 +90,27 @@ class FlightServer(pyarrow.flight.FlightServerBase):
         # Check the type of the message
         key = FlightServer.descriptor_to_key(descriptor)
         logging.info(f"Server {self.location[-5:]} received stuff: {key}")
+        command = key[1]
 
         # TODO: nicer encoding for the commands
-        if key[1] in [b"fss_eq", b"fss_comp"]:
+        if command in [b"fss_eq", b"fss_comp"]:
             table = reader.read_all()
             n = np.asarray(table.to_pandas())
-            op = "fss_eq" if key[1] == b"fss_eq" else "fss_comp"
+            op = "fss_eq" if command == b"fss_eq" else "fss_comp"
             logging.info(
                 f"Feeding primitives for {op} with shape {n.shape} and type {n.dtype}: \n {n}"
             )
             logging.info(f"Creating a stupid message")
 
             # self.local_worker.feed_crypto_primitive_store({op: n})
+
             worker_message = self.local_worker.create_worker_command_message(
                 "feed_crypto_primitive_store", None, {op: n}
             )
             # TODO: wrong worker??
             bin_message = sy.serde.serialize(worker_message, worker=self.local_worker)
             response = self.forward_binary_message(bin_message)
+
             # logging.info(f"Asking gently: {worker_message}")
             # logging.info(f"This is being handled by {self.local_worker}")
             # for handler in self.local_worker.message_handlers:
@@ -117,7 +120,7 @@ class FlightServer(pyarrow.flight.FlightServerBase):
             #         logging.info("Finished handling.")
             #         break
             # self.local_worker._recv_msg(worker_message)
-            logging.info(f"Done. \n response?{response}")
+            # logging.info(f"Done. \n response?{response}")
         else:
             # Read the first (and only) record, discard the metadata
             record_batch = reader.read_chunk().data
@@ -125,7 +128,7 @@ class FlightServer(pyarrow.flight.FlightServerBase):
             # The first two buffers hold some metadata about the binary array
             message_buffer = record_batch[0].buffers()[2]
 
-            if key[1] == b"json":
+            if command == b"json":
                 # logging.info("Got json.")
                 request_id = None
                 try:
@@ -144,6 +147,12 @@ class FlightServer(pyarrow.flight.FlightServerBase):
 
                 # logging.info(f"Response: {response}")
                 bin_response = json.dumps(response).encode("utf-8")
+
+            elif command == b"arrow":
+                bin_message = message_buffer.to_pybytes()
+                logging.info(f"Received {len(bin_message)} bytes. \n It's an arrow!")
+                bin_response = self.forward_binary_message_arrow(bin_message)
+                logging.info(f"Writing bin response: {len(bin_response)}")
 
             else:
                 # logging.info(f"Got binary message: {message_buffer}")
